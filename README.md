@@ -18,6 +18,21 @@ Credential → Encryption (PBKDF2 + AES-256-GCM) → Encrypted Vault → Browser
 
 ---
 
+## 下载安装包（无需构建）
+
+[`release/`](release) 目录提供 v1.0.0 已构建安装包，下载解压后按下文「加载扩展」
+步骤选择解压目录即可（压缩包内 `manifest.json` 位于根层，解压后的整个目录就是
+「Load unpacked / 临时载入」的目标）：
+
+| 浏览器 | 下载地址 |
+| --- | --- |
+| Chrome | [GhostVault-v1.0.0-chrome.zip](https://github.com/AlfredNing/GhostVault/raw/v1.0.0/release/GhostVault-v1.0.0-chrome.zip) |
+| Edge | [GhostVault-v1.0.0-edge.zip](https://github.com/AlfredNing/GhostVault/raw/v1.0.0/release/GhostVault-v1.0.0-edge.zip) |
+| Brave | [GhostVault-v1.0.0-brave.zip](https://github.com/AlfredNing/GhostVault/raw/v1.0.0/release/GhostVault-v1.0.0-brave.zip) |
+| Firefox | [GhostVault-v1.0.0-firefox.zip](https://github.com/AlfredNing/GhostVault/raw/v1.0.0/release/GhostVault-v1.0.0-firefox.zip) |
+
+---
+
 ## 开发环境
 
 - Node.js >= 20
