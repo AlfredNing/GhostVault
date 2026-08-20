@@ -14,14 +14,17 @@ const STYLE = `
 :host { all: initial; }
 .gv-root, .gv-root * { box-sizing: border-box; margin: 0; padding: 0;
   font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif; }
-.gv-fab { position: fixed; right: 20px; bottom: 20px; width: 46px; height: 46px;
+.gv-fab { position: fixed; right: 20px; bottom: 20px; height: 46px;
+  padding: 0 14px; display: flex; align-items: center; gap: 8px;
   border-radius: 14px; border: 1px solid rgba(255,255,255,.14);
   background: rgba(17,17,23,.92); backdrop-filter: blur(10px);
-  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  cursor: pointer;
   box-shadow: 0 8px 24px rgba(0,0,0,.35); z-index: 2147483646;
   transition: transform .12s ease; }
 .gv-fab:hover { transform: translateY(-2px); }
-.gv-fab svg { width: 26px; height: 26px; }
+.gv-fab svg { width: 24px; height: 24px; flex: none; }
+.gv-fab-label { font-size: 12px; font-weight: 600; color: #f4f4f5;
+  white-space: nowrap; letter-spacing: .01em; }
 .gv-panel { position: fixed; right: 20px; bottom: 76px; width: 288px;
   border-radius: 14px; border: 1px solid rgba(255,255,255,.12);
   background: rgba(17,17,23,.96); backdrop-filter: blur(14px);
@@ -72,6 +75,8 @@ export interface GhostUiCallbacks {
 export class GhostUi {
   private root: ShadowRoot;
   private panel: HTMLDivElement | null = null;
+  private fab: HTMLButtonElement | null = null;
+  private fabLabel: HTMLSpanElement | null = null;
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
@@ -88,24 +93,37 @@ export class GhostUi {
   }
 
   /**
-   * Swap the language. The FAB carries only the (untranslated) brand name and
-   * panels are rebuilt on every open, so nothing mounted needs refreshing.
+   * Swap the language. Panels are rebuilt on every open, so only the
+   * persistent FAB label needs refreshing.
    */
   setLanguage(lang: Lang): void {
     this.t = createTranslator(lang);
+    if (this.fabLabel) this.fabLabel.textContent = this.t("donate.fabLabel");
+    if (this.fab) {
+      const title = `GhostVault · ${this.t("donate.fabLabel")}`;
+      this.fab.title = title;
+      this.fab.setAttribute("aria-label", title);
+    }
   }
 
   showFab(): void {
-    if (this.root.querySelector(".gv-fab")) return;
+    if (this.fab) return;
     const fab = document.createElement("button");
     fab.className = "gv-fab";
-    fab.title = "GhostVault";
-    fab.setAttribute("aria-label", "GhostVault");
     fab.innerHTML = GHOST_SVG;
+    const label = document.createElement("span");
+    label.className = "gv-fab-label";
+    label.textContent = this.t("donate.fabLabel");
+    fab.appendChild(label);
+    const title = `GhostVault · ${this.t("donate.fabLabel")}`;
+    fab.title = title;
+    fab.setAttribute("aria-label", title);
     fab.addEventListener("click", () => {
       this.closePanel();
       this.callbacks.onOpenPanel();
     });
+    this.fab = fab;
+    this.fabLabel = label;
     this.root.appendChild(fab);
   }
 

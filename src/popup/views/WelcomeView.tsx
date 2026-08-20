@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { VaultApi } from "@/shared/vaultApi";
 import { useT } from "../i18n";
+import { DonateButton } from "./DonateButton";
 
 const MIN_LENGTH = 8;
 
@@ -44,7 +45,8 @@ export function WelcomeView({
   }
 
   return (
-    <div className="flex min-h-[480px] flex-col justify-center gap-6 p-6">
+    <div className="relative flex min-h-[480px] flex-col justify-center gap-6 p-6">
+      <DonateButton className="absolute top-3 right-3" />
       <div className="flex flex-col items-center gap-3 text-center">
         <GhostLogo size={56} />
         <div>

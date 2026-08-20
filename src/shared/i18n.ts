@@ -97,6 +97,7 @@ const en = {
   "donate.description": "If GhostVault helps you, consider fueling its developer.",
   "donate.caption": "“You’ve worked hard — have an Americano.”",
   "donate.hint": "Open WeChat and scan the reward code to tip.",
+  "donate.fabLabel": "I love Americano",
 
   // -- private windows ------------------------------------------------------
   "incognito.title": "Enable in private windows",
@@ -186,11 +187,12 @@ const zh: Record<MessageKey, string> = {
   "language.en": "English",
   "language.zh": "中文",
 
-  "vault.donate": "请我喝杯美式",
-  "donate.title": "请我喝杯美式",
+  "vault.donate": "请我喝美式",
+  "donate.title": "请我喝美式",
   "donate.description": "如果 GhostVault 帮到了你，欢迎给开发者加杯咖啡。",
   "donate.caption": "「辛苦了，来杯美式」",
   "donate.hint": "打开微信扫一扫赞赏码，打赏任意金额。",
+  "donate.fabLabel": "我爱喝美式",
 
   "incognito.title": "在隐私窗口中启用",
   "incognito.instructionsChromium": "打开本扩展的详情页，允许它在隐私窗口中运行。",
