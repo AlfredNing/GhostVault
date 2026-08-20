@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   Check,
+  Coffee,
   Copy,
   Globe,
   LockKeyhole,
@@ -16,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import type { Credential } from "@/shared/types";
 import type { VaultApi } from "@/shared/vaultApi";
 import { CredentialDialog } from "./CredentialDialog";
+import { DonateDialog } from "./DonateDialog";
 import { IncognitoNotice } from "./IncognitoNotice";
 import { SettingsDialog } from "./SettingsDialog";
 import { useT } from "../i18n";
@@ -33,6 +35,7 @@ export function VaultView({
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<Credential | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [donateOpen, setDonateOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   async function refresh() {
@@ -72,6 +75,15 @@ export function VaultView({
         <GhostLogo size={24} />
         <span className="text-sm font-semibold tracking-tight">GhostVault</span>
         <div className="ml-auto flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            title={t("vault.donate")}
+            aria-label={t("vault.donate")}
+            onClick={() => setDonateOpen(true)}
+          >
+            <Coffee />
+          </Button>
           <Button
             variant="ghost"
             size="icon"
@@ -195,6 +207,7 @@ export function VaultView({
         onSaved={refresh}
       />
       <SettingsDialog api={api} open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <DonateDialog open={donateOpen} onOpenChange={setDonateOpen} />
     </div>
   );
 }
