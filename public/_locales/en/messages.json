@@ -1,0 +1,6 @@
+{
+  "extDescription": {
+    "message": "Local-first private password vault. Your credentials, encrypted, always on-device.",
+    "description": "Extension description shown in the browser's extension list and store listing."
+  }
+}

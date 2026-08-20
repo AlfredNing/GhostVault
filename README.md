@@ -97,6 +97,40 @@ Firefox 禁止扩展打开特权页 `about:addons`，因此只显示文字指引
 
 ---
 
+## 多语言（中文 / English）
+
+界面支持简体中文与英文，默认**跟随浏览器界面语言**，也可以在设置里手动指定
+（设置 → Language → 跟随浏览器 / English / 中文）。
+
+UI 文案走自建词条表 [`src/shared/i18n.ts`](src/shared/i18n.ts)，而非原生
+`chrome.i18n`，原因有三：
+
+- `chrome.i18n` 的 locale **无法在运行时覆盖**，用户就永远不能独立于浏览器语言
+  挑选界面语言（这正是 Bitwarden 扩展至今没有语言切换的原因）；
+- 它在非扩展环境返回空串，会让本项目刻意支持的 popup 独立预览变成空白界面；
+- 普通对象能获得编译期 key 检查：`zh` 表声明为 `Record<MessageKey, string>`，
+  漏词条直接构建失败。
+
+`_locales/` 仍然保留，但**只用于本地化 manifest 的 `description`**（浏览器扩展
+列表与商店页需要），源文件位于 [`public/_locales/`](public/_locales)，随
+`public/` 一起拷入产物。
+
+语言解析规则（[`normalizeLang`](src/shared/i18n.ts)）：所有中文变体
+（`zh-CN` / `zh-TW` / `zh-Hant-HK` …）统一归到 `zh`，其余一切回退英文。繁体
+用户目前会看到简体，如需拆分再新增 `zh-TW` 词条即可。
+
+各上下文的取值时机：
+
+| 上下文 | 取值方式 |
+| --- | --- |
+| Popup | `I18nProvider` 读取设置，切换语言即时重渲染整个弹窗 |
+| 内容脚本 | 先用浏览器语言渲染，再异步读取设置并 `ui.setLanguage()` 修正 |
+
+浏览器语言统一经由 Browser Adapter 的 `locale.getUILanguage()` 获取，回退链为
+`i18n.getUILanguage()` → `navigator.language` → `"en"`。
+
+---
+
 ## 项目结构
 
 ```

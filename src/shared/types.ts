@@ -5,6 +5,8 @@
  * in memory while the vault is unlocked. On disk, everything lives inside the
  * AES-256-GCM encrypted blob (see src/crypto).
  */
+import { DEFAULT_LANGUAGE } from "./i18n";
+import type { LanguageSetting, MessageKey } from "./i18n";
 
 /** A single decrypted credential entry. */
 export interface Credential {
@@ -54,12 +56,12 @@ export type LockTimeoutMinutes = 5 | 15 | 30 | 0;
 
 export const LOCK_TIMEOUT_OPTIONS: ReadonlyArray<{
   value: LockTimeoutMinutes;
-  label: string;
+  labelKey: MessageKey;
 }> = [
-  { value: 5, label: "5 minutes" },
-  { value: 15, label: "15 minutes" },
-  { value: 30, label: "30 minutes" },
-  { value: 0, label: "Never" },
+  { value: 5, labelKey: "lockTimeout.5" },
+  { value: 15, labelKey: "lockTimeout.15" },
+  { value: 30, labelKey: "lockTimeout.30" },
+  { value: 0, labelKey: "lockTimeout.0" },
 ];
 
 export const DEFAULT_LOCK_TIMEOUT: LockTimeoutMinutes = 5;
@@ -73,11 +75,14 @@ export interface Settings {
    * can only be flipped by the user.
    */
   incognitoHintDismissed: boolean;
+  /** UI language; `auto` follows the browser UI language. */
+  language: LanguageSetting;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
   lockTimeout: DEFAULT_LOCK_TIMEOUT,
   incognitoHintDismissed: false,
+  language: DEFAULT_LANGUAGE,
 };
 
 /** Plaintext input for creating/updating a credential. */

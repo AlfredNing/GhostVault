@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { VaultApi } from "@/shared/vaultApi";
+import { useT } from "../i18n";
 
 export function UnlockView({
   api,
@@ -13,6 +14,7 @@ export function UnlockView({
   api: VaultApi;
   onUnlocked: () => void;
 }) {
+  const t = useT();
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -27,8 +29,8 @@ export function UnlockView({
     } catch (err) {
       setError(
         err instanceof Error && err.message === "WRONG_PASSWORD"
-          ? "Incorrect master password."
-          : "Could not unlock the vault.",
+          ? t("unlock.wrongPassword")
+          : t("unlock.failed"),
       );
     } finally {
       setBusy(false);
@@ -42,17 +44,17 @@ export function UnlockView({
         <div>
           <h1 className="flex items-center justify-center gap-2 text-lg font-semibold tracking-tight">
             <LockKeyhole className="size-4 text-muted-foreground" />
-            GhostVault Locked
+            {t("unlock.title")}
           </h1>
           <p className="mt-1 text-xs text-muted-foreground">
-            Enter your master password to unlock.
+            {t("unlock.subtitle")}
           </p>
         </div>
       </div>
 
       <form onSubmit={submit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="gv-master-password">Master Password</Label>
+          <Label htmlFor="gv-master-password">{t("unlock.label")}</Label>
           <Input
             id="gv-master-password"
             type="password"
@@ -60,7 +62,7 @@ export function UnlockView({
             autoFocus
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Master password"
+            placeholder={t("unlock.placeholder")}
           />
         </div>
 
@@ -71,7 +73,7 @@ export function UnlockView({
         )}
 
         <Button type="submit" disabled={busy || password.length === 0} className="w-full">
-          {busy ? "Unlocking…" : "Unlock"}
+          {busy ? t("unlock.submitting") : t("unlock.submit")}
         </Button>
       </form>
     </div>

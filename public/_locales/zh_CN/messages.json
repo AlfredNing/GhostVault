@@ -1,0 +1,6 @@
+{
+  "extDescription": {
+    "message": "本地优先的私人密码保险库。凭据全程加密，只留在你自己的设备上。",
+    "description": "Extension description shown in the browser's extension list and store listing."
+  }
+}

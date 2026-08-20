@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { VaultApi } from "@/shared/vaultApi";
+import { useT } from "../i18n";
 
 const MIN_LENGTH = 8;
 
@@ -14,6 +15,7 @@ export function WelcomeView({
   api: VaultApi;
   onCreated: () => void;
 }) {
+  const t = useT();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -23,11 +25,11 @@ export function WelcomeView({
     event.preventDefault();
     setError(null);
     if (password.length < MIN_LENGTH) {
-      setError(`Master password must be at least ${MIN_LENGTH} characters.`);
+      setError(t("welcome.tooShort", { min: MIN_LENGTH }));
       return;
     }
     if (password !== confirm) {
-      setError("Passwords do not match.");
+      setError(t("welcome.mismatch"));
       return;
     }
     setBusy(true);
@@ -35,7 +37,7 @@ export function WelcomeView({
       await api.createVault(password);
       onCreated();
     } catch {
-      setError("Could not create the vault.");
+      setError(t("welcome.failed"));
     } finally {
       setBusy(false);
     }
@@ -47,18 +49,17 @@ export function WelcomeView({
         <GhostLogo size={56} />
         <div>
           <h1 className="text-lg font-semibold tracking-tight">
-            Welcome to GhostVault
+            {t("welcome.title")}
           </h1>
           <p className="mt-1 text-xs text-muted-foreground">
-            Your private digital identity vault. Encrypted locally, never
-            uploaded.
+            {t("welcome.subtitle")}
           </p>
         </div>
       </div>
 
       <form onSubmit={submit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="gv-new-password">Create Master Password</Label>
+          <Label htmlFor="gv-new-password">{t("welcome.passwordLabel")}</Label>
           <Input
             id="gv-new-password"
             type="password"
@@ -66,18 +67,20 @@ export function WelcomeView({
             autoFocus
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="At least 8 characters"
+            placeholder={t("welcome.passwordPlaceholder", { min: MIN_LENGTH })}
           />
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="gv-confirm-password">Confirm Password</Label>
+          <Label htmlFor="gv-confirm-password">
+            {t("welcome.confirmLabel")}
+          </Label>
           <Input
             id="gv-confirm-password"
             type="password"
             autoComplete="new-password"
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
-            placeholder="Repeat master password"
+            placeholder={t("welcome.confirmPlaceholder")}
           />
         </div>
 
@@ -88,11 +91,10 @@ export function WelcomeView({
         )}
 
         <Button type="submit" disabled={busy} className="w-full">
-          {busy ? "Creating vault…" : "Create Vault"}
+          {busy ? t("welcome.submitting") : t("welcome.submit")}
         </Button>
         <p className="text-center text-[11px] text-muted-foreground">
-          The master password is never stored. If you forget it, the vault
-          cannot be recovered.
+          {t("welcome.hint")}
         </p>
       </form>
     </div>

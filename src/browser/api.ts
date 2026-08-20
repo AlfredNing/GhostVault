@@ -236,6 +236,27 @@ export const alarms = {
 const alarmListeners: Array<(alarm: chrome.alarms.Alarm) => void> = [];
 
 // ---------------------------------------------------------------------------
+// locale
+// ---------------------------------------------------------------------------
+
+export const locale = {
+  /**
+   * The browser UI language (e.g. `"zh-CN"`), which is what drives the
+   * extension's automatic language choice. Falls back to `navigator.language`
+   * outside an extension context and to `"en"` in environments without either.
+   */
+  getUILanguage(): string {
+    const i18n = api?.i18n as { getUILanguage?: () => string } | undefined;
+    const fromExtension = i18n?.getUILanguage?.();
+    if (fromExtension) return fromExtension;
+    if (typeof navigator !== "undefined" && navigator.language) {
+      return navigator.language;
+    }
+    return "en";
+  },
+};
+
+// ---------------------------------------------------------------------------
 // extension metadata
 // ---------------------------------------------------------------------------
 

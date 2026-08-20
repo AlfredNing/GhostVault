@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { VaultStatus } from "@/shared/types";
 import type { VaultApi } from "@/shared/vaultApi";
 import { getVaultApi } from "./api";
+import { I18nProvider, useT } from "./i18n";
 import { UnlockView } from "./views/UnlockView";
 import { VaultView } from "./views/VaultView";
 import { WelcomeView } from "./views/WelcomeView";
@@ -28,15 +29,35 @@ export default function App() {
     };
   }, []);
 
+  // The provider wraps the loading state too, so every string — including
+  // "Loading…" — is translated from the very first paint.
+  return (
+    <I18nProvider api={api}>
+      <Routes api={api} status={status} onChange={setStatus} />
+    </I18nProvider>
+  );
+}
+
+function Routes({
+  api,
+  status,
+  onChange,
+}: {
+  api: VaultApi | null;
+  status: VaultStatus | null;
+  onChange: (status: VaultStatus) => void;
+}) {
+  const t = useT();
+
   if (!api || !status) {
     return (
       <div className="flex min-h-[480px] items-center justify-center">
-        <p className="text-sm text-muted-foreground">Loading…</p>
+        <p className="text-sm text-muted-foreground">{t("app.loading")}</p>
       </div>
     );
   }
 
-  const refresh = async () => setStatus(await api.getStatus());
+  const refresh = async () => onChange(await api.getStatus());
 
   if (status === "uninitialized") {
     return <WelcomeView api={api} onCreated={() => void refresh()} />;

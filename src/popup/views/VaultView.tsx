@@ -18,6 +18,7 @@ import type { VaultApi } from "@/shared/vaultApi";
 import { CredentialDialog } from "./CredentialDialog";
 import { IncognitoNotice } from "./IncognitoNotice";
 import { SettingsDialog } from "./SettingsDialog";
+import { useT } from "../i18n";
 
 export function VaultView({
   api,
@@ -26,6 +27,7 @@ export function VaultView({
   api: VaultApi;
   onLocked: () => void;
 }) {
+  const t = useT();
   const [credentials, setCredentials] = useState<Credential[]>([]);
   const [query, setQuery] = useState("");
   const [editorOpen, setEditorOpen] = useState(false);
@@ -58,7 +60,8 @@ export function VaultView({
   }
 
   async function remove(credential: Credential) {
-    if (!window.confirm(`Delete "${credential.title}" from the vault?`)) return;
+    if (!window.confirm(t("vault.deleteConfirm", { title: credential.title })))
+      return;
     await api.remove(credential.id);
     await refresh();
   }
@@ -72,8 +75,8 @@ export function VaultView({
           <Button
             variant="ghost"
             size="icon"
-            title="Settings"
-            aria-label="Settings"
+            title={t("vault.settings")}
+            aria-label={t("vault.settings")}
             onClick={() => setSettingsOpen(true)}
           >
             <Settings />
@@ -81,8 +84,8 @@ export function VaultView({
           <Button
             variant="ghost"
             size="icon"
-            title="Lock vault"
-            aria-label="Lock vault"
+            title={t("vault.lock")}
+            aria-label={t("vault.lock")}
             onClick={() => {
               void api.lock().then(onLocked);
             }}
@@ -97,15 +100,15 @@ export function VaultView({
           <Search className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             className="pl-8"
-            placeholder="Search vault"
+            placeholder={t("vault.search")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
         <Button
           size="icon"
-          title="Add credential"
-          aria-label="Add credential"
+          title={t("vault.add")}
+          aria-label={t("vault.add")}
           onClick={() => {
             setEditing(null);
             setEditorOpen(true);
@@ -121,9 +124,7 @@ export function VaultView({
           <div className="flex h-full flex-col items-center justify-center gap-2 py-16 text-center">
             <Globe className="size-6 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">
-              {credentials.length === 0
-                ? "No credentials yet. Add your first one."
-                : "Nothing matches your search."}
+              {credentials.length === 0 ? t("vault.empty") : t("vault.noMatch")}
             </p>
           </div>
         ) : (
@@ -144,8 +145,8 @@ export function VaultView({
                 <Button
                   variant="ghost"
                   size="icon"
-                  title="Copy username"
-                  aria-label="Copy username"
+                  title={t("vault.copyUsername")}
+                  aria-label={t("vault.copyUsername")}
                   onClick={() => void copy(credential.username, `u${credential.id}`)}
                 >
                   {copiedId === `u${credential.id}` ? <Check /> : <Copy />}
@@ -153,8 +154,8 @@ export function VaultView({
                 <Button
                   variant="ghost"
                   size="icon"
-                  title="Copy password"
-                  aria-label="Copy password"
+                  title={t("vault.copyPassword")}
+                  aria-label={t("vault.copyPassword")}
                   onClick={() => void copy(credential.password, `p${credential.id}`)}
                 >
                   {copiedId === `p${credential.id}` ? <Check /> : <LockKeyhole />}
@@ -162,8 +163,8 @@ export function VaultView({
                 <Button
                   variant="ghost"
                   size="icon"
-                  title="Edit"
-                  aria-label="Edit"
+                  title={t("vault.edit")}
+                  aria-label={t("vault.edit")}
                   onClick={() => {
                     setEditing(credential);
                     setEditorOpen(true);
@@ -174,8 +175,8 @@ export function VaultView({
                 <Button
                   variant="ghost"
                   size="icon"
-                  title="Delete"
-                  aria-label="Delete"
+                  title={t("vault.delete")}
+                  aria-label={t("vault.delete")}
                   onClick={() => void remove(credential)}
                 >
                   <Trash2 />

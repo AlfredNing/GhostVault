@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { domainFromUrl } from "@/shared/matching";
 import type { Credential } from "@/shared/types";
 import type { VaultApi } from "@/shared/vaultApi";
+import { useT } from "../i18n";
 
 function generatePassword(): string {
   const alphabet =
@@ -35,6 +36,7 @@ export function CredentialDialog({
   editing: Credential | null;
   onSaved: () => Promise<void>;
 }) {
+  const t = useT();
   const [website, setWebsite] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -54,11 +56,11 @@ export function CredentialDialog({
     setError(null);
     const domain = domainFromUrl(website.trim());
     if (!domain) {
-      setError("Enter a website address, e.g. https://github.com");
+      setError(t("credential.invalidWebsite"));
       return;
     }
     if (!username.trim() || !password) {
-      setError("Username and password are required.");
+      setError(t("credential.required"));
       return;
     }
     const input = {
@@ -78,7 +80,7 @@ export function CredentialDialog({
       onOpenChange(false);
       await onSaved();
     } catch {
-      setError("Could not save the credential.");
+      setError(t("credential.failed"));
     } finally {
       setBusy(false);
     }
@@ -88,11 +90,13 @@ export function CredentialDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{editing ? "Edit credential" : "Add credential"}</DialogTitle>
+          <DialogTitle>
+            {editing ? t("credential.editTitle") : t("credential.addTitle")}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={save} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="gv-website">Website</Label>
+            <Label htmlFor="gv-website">{t("credential.website")}</Label>
             <Input
               id="gv-website"
               placeholder="https://github.com"
@@ -102,7 +106,7 @@ export function CredentialDialog({
             />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="gv-username">Username</Label>
+            <Label htmlFor="gv-username">{t("credential.username")}</Label>
             <Input
               id="gv-username"
               placeholder="you@example.com"
@@ -112,7 +116,7 @@ export function CredentialDialog({
             />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="gv-password">Password</Label>
+            <Label htmlFor="gv-password">{t("credential.password")}</Label>
             <div className="flex gap-2">
               <Input
                 id="gv-password"
@@ -125,8 +129,8 @@ export function CredentialDialog({
                 type="button"
                 variant="outline"
                 size="icon"
-                title="Generate strong password"
-                aria-label="Generate strong password"
+                title={t("credential.generate")}
+                aria-label={t("credential.generate")}
                 onClick={() => setPassword(generatePassword())}
               >
                 <Dices />
@@ -142,10 +146,10 @@ export function CredentialDialog({
 
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t("action.cancel")}
             </Button>
             <Button type="submit" disabled={busy}>
-              {busy ? "Saving…" : "Save"}
+              {busy ? t("credential.saving") : t("action.save")}
             </Button>
           </DialogFooter>
         </form>

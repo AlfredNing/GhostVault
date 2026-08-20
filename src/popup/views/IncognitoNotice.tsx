@@ -10,12 +10,14 @@ import { useEffect, useState } from "react";
 import { EyeOff, X } from "lucide-react";
 import { browserRuntime, extensionInfo } from "@/browser/api";
 import { Button } from "@/components/ui/button";
+import type { MessageKey } from "@/shared/i18n";
 import type { VaultApi } from "@/shared/vaultApi";
+import { useT } from "../i18n";
 
-const INSTRUCTIONS =
+const INSTRUCTIONS_KEY: MessageKey =
   browserRuntime === "firefox"
-    ? "In the Add-ons Manager, set “Run in Private Windows” to Allow."
-    : "Open this extension’s details page and allow it in private windows.";
+    ? "incognito.instructionsFirefox"
+    : "incognito.instructionsChromium";
 
 /**
  * Whether the extension may run in private windows:
@@ -38,7 +40,8 @@ export function useIncognitoAccess(): boolean | null {
 }
 
 /** Shared "take me to the toggle" action; hidden when the engine forbids it. */
-export function OpenIncognitoSettingsButton({ label }: { label: string }) {
+export function OpenIncognitoSettingsButton({ labelKey }: { labelKey: MessageKey }) {
+  const t = useT();
   if (!extensionInfo.canOpenIncognitoAccessSettings) return null;
   return (
     <Button
@@ -46,7 +49,7 @@ export function OpenIncognitoSettingsButton({ label }: { label: string }) {
       variant="outline"
       onClick={() => void extensionInfo.openIncognitoAccessSettings()}
     >
-      {label}
+      {t(labelKey)}
     </Button>
   );
 }
@@ -56,6 +59,7 @@ export function OpenIncognitoSettingsButton({ label }: { label: string }) {
  * hint never nags; the Settings dialog keeps a permanent entry point.
  */
 export function IncognitoNotice({ api }: { api: VaultApi }) {
+  const t = useT();
   const allowed = useIncognitoAccess();
   const [dismissed, setDismissed] = useState<boolean | null>(null);
 
@@ -83,19 +87,19 @@ export function IncognitoNotice({ api }: { api: VaultApi }) {
       <div className="flex items-start gap-2">
         <EyeOff className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-medium">Enable in private windows</p>
+          <p className="text-xs font-medium">{t("incognito.title")}</p>
           <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-            {INSTRUCTIONS}
+            {t(INSTRUCTIONS_KEY)}
           </p>
           <div className="mt-2">
-            <OpenIncognitoSettingsButton label="Open settings" />
+            <OpenIncognitoSettingsButton labelKey="incognito.open" />
           </div>
         </div>
         <Button
           variant="ghost"
           size="icon"
-          title="Don’t show again"
-          aria-label="Don’t show again"
+          title={t("incognito.dismiss")}
+          aria-label={t("incognito.dismiss")}
           onClick={() => void dismiss()}
         >
           <X />
@@ -107,18 +111,19 @@ export function IncognitoNotice({ api }: { api: VaultApi }) {
 
 /** Permanent status row inside the Settings dialog. */
 export function IncognitoAccessRow() {
+  const t = useT();
   const allowed = useIncognitoAccess();
   if (allowed === null) return null;
 
   return (
     <div className="flex items-center gap-2 border-t border-white/10 pt-4">
       <div className="min-w-0 flex-1">
-        <p className="text-sm">Private windows</p>
+        <p className="text-sm">{t("incognito.rowTitle")}</p>
         <p className="mt-0.5 text-[11px] text-muted-foreground">
-          {allowed ? "Allowed by the browser." : INSTRUCTIONS}
+          {allowed ? t("incognito.allowed") : t(INSTRUCTIONS_KEY)}
         </p>
       </div>
-      {!allowed && <OpenIncognitoSettingsButton label="Enable" />}
+      {!allowed && <OpenIncognitoSettingsButton labelKey="incognito.enable" />}
     </div>
   );
 }

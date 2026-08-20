@@ -8,10 +8,11 @@
  * The content script never sees the master password and never stores
  * anything; all vault access goes through the background service worker.
  */
-import { runtime } from "../browser/api";
+import { locale, runtime } from "../browser/api";
 import type { MessageEnvelope } from "../shared/messages";
 import { domainFromUrl } from "../shared/matching";
-import type { Credential, CredentialInput } from "../shared/types";
+import { createTranslator, normalizeLang, resolveLang } from "../shared/i18n";
+import type { Credential, CredentialInput, Settings } from "../shared/types";
 import { scanLoginForms, type LoginForm } from "./detect";
 import { fillLoginForm } from "./fill";
 import { GhostUi } from "./ui";
@@ -36,27 +37,44 @@ import { GhostUi } from "./ui";
   let candidate: CredentialInput | null = null;
   const observedForms = new WeakSet<HTMLFormElement>();
 
-  const ui = new GhostUi({
-    onOpenPanel: () => {
-      void openPanel();
+  // Start from the browser UI language so the very first panel is already
+  // localized, then refine once the stored preference arrives.
+  const uiLanguage = locale.getUILanguage();
+  let t = createTranslator(normalizeLang(uiLanguage));
+
+  const ui = new GhostUi(
+    {
+      onOpenPanel: () => {
+        void openPanel();
+      },
+      onFill: (credential) => {
+        if (activeForm) {
+          fillLoginForm(activeForm, credential);
+          ui.toast(t("content.filled"));
+        }
+      },
+      onSaveCandidate: () => {
+        if (!candidate) return;
+        send<Credential>({ type: "gv:credentials:add", input: candidate })
+          .then(() => ui.toast(t("content.saved")))
+          .catch(() => ui.toast(t("content.saveFailed")));
+        candidate = null;
+      },
+      onCancelCandidate: () => {
+        candidate = null;
+      },
     },
-    onFill: (credential) => {
-      if (activeForm) {
-        fillLoginForm(activeForm, credential);
-        ui.toast("Filled by GhostVault");
-      }
-    },
-    onSaveCandidate: () => {
-      if (!candidate) return;
-      send<Credential>({ type: "gv:credentials:add", input: candidate })
-        .then(() => ui.toast("Saved to GhostVault"))
-        .catch(() => ui.toast("Could not save credential"));
-      candidate = null;
-    },
-    onCancelCandidate: () => {
-      candidate = null;
-    },
-  });
+    t,
+  );
+
+  // Settings are unencrypted, so this resolves even while the vault is locked.
+  void send<Settings>({ type: "gv:settings:get" })
+    .then((settings) => {
+      const lang = resolveLang(settings.language, uiLanguage);
+      t = createTranslator(lang);
+      ui.setLanguage(lang);
+    })
+    .catch(() => undefined);
 
   async function openPanel(): Promise<void> {
     try {

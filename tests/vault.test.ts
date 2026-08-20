@@ -109,33 +109,37 @@ describe("vault CRUD", () => {
 });
 
 describe("settings", () => {
-  it("defaults to a 5 minute auto-lock with the private-window hint unseen", async () => {
+  it("defaults to a 5 minute auto-lock, hint unseen, language automatic", async () => {
     expect(await vaultStore.loadSettings()).toEqual({
       lockTimeout: 5,
       incognitoHintDismissed: false,
+      language: "auto",
     });
   });
 
   it("backfills defaults for settings saved before a field existed", async () => {
     // Simulates an existing install whose stored record predates
-    // `incognitoHintDismissed`; loading must not yield undefined.
+    // `incognitoHintDismissed` / `language`; loading must not yield undefined.
     await storage.set({ "gv:settings": { lockTimeout: 30 } });
 
     expect(await vaultStore.loadSettings()).toEqual({
       lockTimeout: 30,
       incognitoHintDismissed: false,
+      language: "auto",
     });
   });
 
-  it("round-trips both fields independently", async () => {
+  it("round-trips every field independently", async () => {
     await vaultStore.saveSettings({
       lockTimeout: 15,
       incognitoHintDismissed: true,
+      language: "zh",
     });
 
     expect(await vaultStore.loadSettings()).toEqual({
       lockTimeout: 15,
       incognitoHintDismissed: true,
+      language: "zh",
     });
   });
 });

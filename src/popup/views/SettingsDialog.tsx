@@ -14,9 +14,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DEFAULT_SETTINGS, LOCK_TIMEOUT_OPTIONS } from "@/shared/types";
+import { LANGUAGE_OPTIONS } from "@/shared/i18n";
+import type { LanguageSetting } from "@/shared/i18n";
+import { LOCK_TIMEOUT_OPTIONS } from "@/shared/types";
 import type { LockTimeoutMinutes, Settings } from "@/shared/types";
 import type { VaultApi } from "@/shared/vaultApi";
+import { useI18n } from "../i18n";
 import { IncognitoAccessRow } from "./IncognitoNotice";
 
 export function SettingsDialog({
@@ -28,6 +31,7 @@ export function SettingsDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t, setting: language, setLanguage } = useI18n();
   const [settings, setSettings] = useState<Settings | null>(null);
 
   useEffect(() => {
@@ -36,9 +40,11 @@ export function SettingsDialog({
 
   async function changeTimeout(value: string) {
     const lockTimeout = Number(value) as LockTimeoutMinutes;
-    // Spread the loaded settings — `setSettings` replaces the whole record, so
-    // building it from scratch would silently drop every other preference.
-    const next: Settings = { ...(settings ?? DEFAULT_SETTINGS), lockTimeout };
+    // Re-read before writing: `setSettings` replaces the whole record, so
+    // relying on local state would drop preferences changed elsewhere (e.g.
+    // the language, which is owned by the i18n provider).
+    const current = await api.getSettings();
+    const next: Settings = { ...current, lockTimeout };
     setSettings(next);
     await api.setSettings(next);
   }
@@ -47,14 +53,12 @@ export function SettingsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Settings</DialogTitle>
-          <DialogDescription>
-            Auto-lock clears the decrypted vault and key material from memory.
-          </DialogDescription>
+          <DialogTitle>{t("settings.title")}</DialogTitle>
+          <DialogDescription>{t("settings.description")}</DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-2">
-          <Label>Auto-lock after</Label>
+          <Label>{t("settings.autoLock")}</Label>
           <Select
             value={String(settings?.lockTimeout ?? 5)}
             onValueChange={(value) => void changeTimeout(value)}
@@ -65,7 +69,28 @@ export function SettingsDialog({
             <SelectContent>
               {LOCK_TIMEOUT_OPTIONS.map((option) => (
                 <SelectItem key={option.value} value={String(option.value)}>
-                  {option.label}
+                  {t(option.labelKey)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <Label>{t("settings.language")}</Label>
+          <Select
+            value={language}
+            onValueChange={(value) =>
+              void setLanguage(value as LanguageSetting)
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {LANGUAGE_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {t(option.labelKey)}
                 </SelectItem>
               ))}
             </SelectContent>

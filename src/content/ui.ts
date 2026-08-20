@@ -6,6 +6,8 @@
  *   login form detected → ghost button appears → user clicks → credential
  *   panel → user clicks Fill → fields are filled.
  */
+import { createTranslator } from "../shared/i18n";
+import type { Lang, Translator } from "../shared/i18n";
 import type { Credential } from "../shared/types";
 
 const STYLE = `
@@ -72,7 +74,10 @@ export class GhostUi {
   private panel: HTMLDivElement | null = null;
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(private callbacks: GhostUiCallbacks) {
+  constructor(
+    private callbacks: GhostUiCallbacks,
+    private t: Translator,
+  ) {
     const host = document.createElement("div");
     host.id = "ghostvault-host";
     this.root = host.attachShadow({ mode: "closed" });
@@ -80,6 +85,14 @@ export class GhostUi {
     style.textContent = STYLE;
     this.root.appendChild(style);
     document.documentElement.appendChild(host);
+  }
+
+  /**
+   * Swap the language. The FAB carries only the (untranslated) brand name and
+   * panels are rebuilt on every open, so nothing mounted needs refreshing.
+   */
+  setLanguage(lang: Lang): void {
+    this.t = createTranslator(lang);
   }
 
   showFab(): void {
@@ -111,12 +124,12 @@ export class GhostUi {
     if (credentials === null) {
       const body = document.createElement("div");
       body.className = "gv-body";
-      body.textContent = "Vault is locked. Open GhostVault from the toolbar to unlock.";
+      body.textContent = this.t("content.locked");
       panel.appendChild(body);
     } else if (credentials.length === 0) {
       const body = document.createElement("div");
       body.className = "gv-empty";
-      body.textContent = "No saved credentials for this site.";
+      body.textContent = this.t("content.noCredentials");
       panel.appendChild(body);
     } else {
       const list = document.createElement("div");
@@ -135,7 +148,7 @@ export class GhostUi {
         meta.append(title, user);
         const fill = document.createElement("button");
         fill.className = "gv-fill";
-        fill.textContent = "Fill";
+        fill.textContent = this.t("content.fill");
         fill.addEventListener("click", () => {
           this.closePanel();
           this.callbacks.onFill(credential);
@@ -155,12 +168,15 @@ export class GhostUi {
     const panel = document.createElement("div");
     panel.className = "gv-panel";
     panel.innerHTML = `
-      <div class="gv-head">${GHOST_SVG}<span>Save password?</span></div>
+      <div class="gv-head">${GHOST_SVG}<span class="gv-save-title"></span></div>
       <div class="gv-body"></div>
       <div class="gv-actions">
-        <button class="gv-btn cancel">Cancel</button>
-        <button class="gv-btn primary save">Save</button>
+        <button class="gv-btn cancel"></button>
+        <button class="gv-btn primary save"></button>
       </div>`;
+    panel.querySelector(".gv-save-title")!.textContent = this.t("content.savePrompt");
+    panel.querySelector(".cancel")!.textContent = this.t("action.cancel");
+    panel.querySelector(".save")!.textContent = this.t("action.save");
     panel.querySelector(".gv-body")!.textContent = `${domain} — ${username}`;
     panel.querySelector(".cancel")!.addEventListener("click", () => {
       this.closePanel();
