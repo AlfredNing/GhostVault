@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "description": "Local-first private password vault. Your credentials, encrypted, always on-device.",
   "minimum_chrome_version": "120",
+  "incognito": "spanning",
   "permissions": ["storage", "alarms"],
   "background": {
     "service_worker": "background.js"

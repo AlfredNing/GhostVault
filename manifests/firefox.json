@@ -9,6 +9,7 @@
       "strict_min_version": "115.0"
     }
   },
+  "incognito": "spanning",
   "permissions": ["storage", "alarms"],
   "background": {
     "scripts": ["background.js"]

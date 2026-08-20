@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import type { Credential } from "@/shared/types";
 import type { VaultApi } from "@/shared/vaultApi";
 import { CredentialDialog } from "./CredentialDialog";
+import { IncognitoNotice } from "./IncognitoNotice";
 import { SettingsDialog } from "./SettingsDialog";
 
 export function VaultView({
@@ -115,6 +116,7 @@ export function VaultView({
       </div>
 
       <div className="flex-1 overflow-y-auto px-2 pb-3">
+        <IncognitoNotice api={api} />
         {visible.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-2 py-16 text-center">
             <Globe className="size-6 text-muted-foreground" />

@@ -14,9 +14,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { LOCK_TIMEOUT_OPTIONS } from "@/shared/types";
+import { DEFAULT_SETTINGS, LOCK_TIMEOUT_OPTIONS } from "@/shared/types";
 import type { LockTimeoutMinutes, Settings } from "@/shared/types";
 import type { VaultApi } from "@/shared/vaultApi";
+import { IncognitoAccessRow } from "./IncognitoNotice";
 
 export function SettingsDialog({
   api,
@@ -35,7 +36,9 @@ export function SettingsDialog({
 
   async function changeTimeout(value: string) {
     const lockTimeout = Number(value) as LockTimeoutMinutes;
-    const next = { lockTimeout };
+    // Spread the loaded settings — `setSettings` replaces the whole record, so
+    // building it from scratch would silently drop every other preference.
+    const next: Settings = { ...(settings ?? DEFAULT_SETTINGS), lockTimeout };
     setSettings(next);
     await api.setSettings(next);
   }
@@ -68,6 +71,8 @@ export function SettingsDialog({
             </SelectContent>
           </Select>
         </div>
+
+        <IncognitoAccessRow />
       </DialogContent>
     </Dialog>
   );

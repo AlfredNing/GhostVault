@@ -67,10 +67,17 @@ export const DEFAULT_LOCK_TIMEOUT: LockTimeoutMinutes = 5;
 /** User preferences persisted (unencrypted — contains no secrets). */
 export interface Settings {
   lockTimeout: LockTimeoutMinutes;
+  /**
+   * Set once the user dismisses the "enable in private windows" hint, so the
+   * popup stops surfacing it. The toggle itself lives in browser settings and
+   * can only be flipped by the user.
+   */
+  incognitoHintDismissed: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
   lockTimeout: DEFAULT_LOCK_TIMEOUT,
+  incognitoHintDismissed: false,
 };
 
 /** Plaintext input for creating/updating a credential. */

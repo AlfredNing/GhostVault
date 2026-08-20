@@ -166,6 +166,13 @@ export const tabs = {
     return (await api.tabs.sendMessage(tabId, message)) as T;
   },
 
+  async create(
+    createProperties: chrome.tabs.CreateProperties,
+  ): Promise<chrome.tabs.Tab | null> {
+    if (!api) return null;
+    return api.tabs.create(createProperties);
+  },
+
   onUpdated(
     listener: (
       tabId: number,
@@ -235,5 +242,56 @@ const alarmListeners: Array<(alarm: chrome.alarms.Alarm) => void> = [];
 export const extensionInfo = {
   getManifest(): chrome.runtime.Manifest | null {
     return api ? api.runtime.getManifest() : null;
+  },
+
+  /**
+   * Whether the user has allowed this extension to run in private windows.
+   *
+   *   true  → granted
+   *   false → not granted
+   *   null  → unknown (no extension context, or the engine does not expose it)
+   *
+   * Read-only by design: browsers deliberately provide no way for an extension
+   * to grant itself private-window access, because that would let any extension
+   * silently observe private browsing. Detection + guidance is all we can do.
+   */
+  async isAllowedIncognitoAccess(): Promise<boolean | null> {
+    // `chrome.extension` is available on extension pages (the popup); it is not
+    // guaranteed inside a service worker, hence the defensive lookup.
+    const ext = api?.extension as
+      | { isAllowedIncognitoAccess?: () => Promise<boolean> }
+      | undefined;
+    if (!ext?.isAllowedIncognitoAccess) return null;
+    try {
+      const allowed = await ext.isAllowedIncognitoAccess();
+      // Engines that only support the legacy callback form resolve to
+      // undefined; treat anything non-boolean as "cannot determine" so the UI
+      // stays silent rather than claiming access is missing.
+      return typeof allowed === "boolean" ? allowed : null;
+    } catch {
+      return null;
+    }
+  },
+
+  /**
+   * True when {@link openIncognitoAccessSettings} can actually navigate to the
+   * page holding the toggle. Firefox forbids extensions from opening the
+   * privileged `about:addons`, so there we can only tell the user where to go.
+   */
+  get canOpenIncognitoAccessSettings(): boolean {
+    return api !== null && browserRuntime === "chromium";
+  },
+
+  /** Opens this extension's details page, where the toggle lives. */
+  async openIncognitoAccessSettings(): Promise<boolean> {
+    if (!this.canOpenIncognitoAccessSettings) return false;
+    const id = api?.runtime.id;
+    if (!id) return false;
+    try {
+      await tabs.create({ url: `chrome://extensions/?id=${id}` });
+      return true;
+    } catch {
+      return false;
+    }
   },
 };

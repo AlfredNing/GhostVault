@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { storage } from "@/browser/api";
+import { extensionInfo, storage } from "@/browser/api";
 import { vaultService } from "@/vault/vaultService";
+import { vaultStore } from "@/storage/vaultStore";
 import { VaultError } from "@/shared/vaultApi";
 
 const MASTER = "test-master-password";
@@ -104,5 +105,47 @@ describe("vault CRUD", () => {
     expect(await vaultService.forDomain("login.github.com")).toHaveLength(1);
     expect(await vaultService.forDomain("evil-github.com")).toHaveLength(0);
     expect(await vaultService.forDomain("github.com.evil.com")).toHaveLength(0);
+  });
+});
+
+describe("settings", () => {
+  it("defaults to a 5 minute auto-lock with the private-window hint unseen", async () => {
+    expect(await vaultStore.loadSettings()).toEqual({
+      lockTimeout: 5,
+      incognitoHintDismissed: false,
+    });
+  });
+
+  it("backfills defaults for settings saved before a field existed", async () => {
+    // Simulates an existing install whose stored record predates
+    // `incognitoHintDismissed`; loading must not yield undefined.
+    await storage.set({ "gv:settings": { lockTimeout: 30 } });
+
+    expect(await vaultStore.loadSettings()).toEqual({
+      lockTimeout: 30,
+      incognitoHintDismissed: false,
+    });
+  });
+
+  it("round-trips both fields independently", async () => {
+    await vaultStore.saveSettings({
+      lockTimeout: 15,
+      incognitoHintDismissed: true,
+    });
+
+    expect(await vaultStore.loadSettings()).toEqual({
+      lockTimeout: 15,
+      incognitoHintDismissed: true,
+    });
+  });
+});
+
+describe("private-window access detection", () => {
+  it("reports unknown outside an extension context instead of throwing", async () => {
+    // The unit-test environment has no chrome.* APIs, so the adapter must
+    // degrade to `null` — the popup then renders no hint at all.
+    expect(await extensionInfo.isAllowedIncognitoAccess()).toBeNull();
+    expect(extensionInfo.canOpenIncognitoAccessSettings).toBe(false);
+    expect(await extensionInfo.openIncognitoAccessSettings()).toBe(false);
   });
 });
